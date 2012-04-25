@@ -3,12 +3,19 @@ module Main where
 
 import Control.Applicative
 import Control.Arrow
+import Data.Function
 import Data.List hiding (partition)
 
 main = do -- print $ fmap product $ powerset [1..5]
 --  print $ () [2,4..]
 --  print $ tatami 14 14
-        mapM_ print $ takeWhile ((<=5) . snd) $ fmap (id &&& nonTatami) [2,4..]
+        mapM_ print $ newBest $ fmap (id &&& nonTatami) [2,4..]
+        
+newBest xs@(x:_) = foldr (opBy (on (<) snd)) (const []) xs x
+
+opBy :: (a -> a -> Bool) -> a -> (a -> [a]) -> a -> [a]
+opBy lt x rest best = if x `lt` best then rest best else x:rest x
+
 nonTatami :: Int -> Int       
 nonTatami = (length . filter (not . uncurry tatami) . parts)
 
