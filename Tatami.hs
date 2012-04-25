@@ -3,10 +3,11 @@ module Main where
 
 import Control.Applicative
 import Control.Arrow
-import Data.List
+import Data.List hiding (partition)
 
 main = do -- print $ fmap product $ powerset [1..5]
-          mapM_ (print . (id &&& parts)) [2,4..]
+  print $ tatami 14 14
+            -- mapM_ (print . (id &&& parts)) [2,4..]
        
 parts n = let factors = unique . sort . fmap product . powerset . primeFactors $ n
           in takeWhile (uncurry (<=)) $ zip factors (reverse factors)
@@ -24,12 +25,37 @@ powerset (x:xs) = xss /\/ map (x:) xss
         []     /\/ ys = ys
         (x:xs) /\/ ys = x : (ys /\/ xs)
 
+-- Throws lots of errors even in seemingly legitimate situations, to
+-- help debug the rest of the code, which should confirm to certain expectations.
+tatami :: Int -> Int -> [(Int, Bool)]
+tatami r s | r > s = tatami s r -- error "Please rotate 90 degrees."
+           | odd (r * s) = error "Given an odd size of room."
+           | odd r = case r of
+                       1 -> undefined -- [True]
+                       r -> partitionOdd r s
+           | even r = case r of
+                        2 -> undefined -- [True]
+                        r -> partitionEven r s
+           | True = error ("Shouldn't happen.  " ++ show r ++ "is neither even nor odd.")
 
+partitionEven r s = take (s + 1) . zip [0..] $ drop (r-1) ln'
+    where
+      -- stuff that ends in 1
+      l1 = False : ln
+      -- stuff that ends in something other than 1
+      ln = replicate (r-1) False ++ True : zipWith (||) (drop 2 l1)  l1
+      ln' = zipWith (||) ln l1
+    
+partitionOdd :: Int -> Int -> [(Int,Bool)]
+partitionOdd r s = take (s + 1) . zip [0..] $ drop r l
+    where l = replicate r False ++ True : zipWith (||) (drop 2 l) l
+
+          
 
 isPrime n = n > 1 &&
              foldr (\p r -> p*p > n || ((n `rem` p) /= 0 && r))
               True primes
- 
+
 primeFactors n | n > 1 = go n primes
    where
      go n ps@(p:ps')
