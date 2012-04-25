@@ -6,9 +6,12 @@ import Control.Arrow
 import Data.List hiding (partition)
 
 main = do -- print $ fmap product $ powerset [1..5]
-  print $ tatami 14 14
-            -- mapM_ (print . (id &&& parts)) [2,4..]
-       
+--  print $ () [2,4..]
+--  print $ tatami 14 14
+        mapM_ print $ takeWhile ((<=5) . snd) $ fmap (id &&& nonTatami) [2,4..]
+nonTatami :: Int -> Int       
+nonTatami = (length . filter (not . uncurry tatami) . parts)
+
 parts n = let factors = unique . sort . fmap product . powerset . primeFactors $ n
           in takeWhile (uncurry (<=)) $ zip factors (reverse factors)
 
