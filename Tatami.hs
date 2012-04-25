@@ -10,7 +10,7 @@ main = do -- print $ fmap product $ powerset [1..5]
     print $ nonTatami' 54
 --  print $ () [2,4..]
 --  print $ tatami 14 14
---        mapM_ print $ newBest $ fmap (id &&& nonTatami) [2,4..]
+    -- mapM_ print $ newBest $ fmap (id &&& nonTatami) [2,4..]
         
 newBest xs@(x:_) = foldr (opBy (on (<) snd)) (const []) xs x
 
@@ -52,7 +52,9 @@ tatami r s | r > s = error "Please rotate 90 degrees."
                         r -> partitionEven r s
            | True = error ("Shouldn't happen.  " ++ show r ++ "is neither even nor odd.")
 
-partitionEven r s = last $ take (s + 1) $ drop (r-1) ln'
+partitionEven = (fmap.fmap) (last . fmap snd) partitionEven'
+partitionEven' :: Int -> Int -> [(Int,Bool)]
+partitionEven' r s = take (s + 1) . zip [0..] $ drop (r-1) ln'
     where
       -- stuff that ends in 1
       l1 = False : ln
@@ -60,8 +62,9 @@ partitionEven r s = last $ take (s + 1) $ drop (r-1) ln'
       ln = replicate (r-1) False ++ True : zipWith (||) (drop 2 l1)  l1
       ln' = zipWith (||) ln l1
     
-partitionOdd :: Int -> Int -> Bool
-partitionOdd r s = last $ take (s + 1) $ drop r l
+partitionOdd = (fmap.fmap) (last . fmap snd) partitionOdd'
+partitionOdd' :: Int -> Int -> [(Int,Bool)]
+partitionOdd' r s = take (s + 1) . zip [0..] $ drop r l
     where l = replicate r False ++ True : zipWith (||) (drop 2 l) l
 
           
