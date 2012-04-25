@@ -27,18 +27,18 @@ powerset (x:xs) = xss /\/ map (x:) xss
 
 -- Throws lots of errors even in seemingly legitimate situations, to
 -- help debug the rest of the code, which should confirm to certain expectations.
-tatami :: Int -> Int -> [(Int, Bool)]
-tatami r s | r > s = tatami s r -- error "Please rotate 90 degrees."
+tatami :: Int -> Int -> Bool
+tatami r s | r > s = error "Please rotate 90 degrees."
            | odd (r * s) = error "Given an odd size of room."
            | odd r = case r of
-                       1 -> undefined -- [True]
+                       1 -> True
                        r -> partitionOdd r s
            | even r = case r of
-                        2 -> undefined -- [True]
+                        2 -> True
                         r -> partitionEven r s
            | True = error ("Shouldn't happen.  " ++ show r ++ "is neither even nor odd.")
 
-partitionEven r s = take (s + 1) . zip [0..] $ drop (r-1) ln'
+partitionEven r s = last $ take (s + 1) $ drop (r-1) ln'
     where
       -- stuff that ends in 1
       l1 = False : ln
@@ -46,8 +46,8 @@ partitionEven r s = take (s + 1) . zip [0..] $ drop (r-1) ln'
       ln = replicate (r-1) False ++ True : zipWith (||) (drop 2 ln')  ln'
       ln' = zipWith (||) ln l1
     
-partitionOdd :: Int -> Int -> [(Int,Bool)]
-partitionOdd r s = take (s + 1) . zip [0..] $ drop r l
+partitionOdd :: Int -> Int -> Bool
+partitionOdd r s = last $ take (s + 1) $ drop r l
     where l = replicate r False ++ True : zipWith (||) (drop 2 l) l
 
           
