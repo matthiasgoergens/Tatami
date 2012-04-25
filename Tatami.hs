@@ -7,9 +7,10 @@ import Data.Function
 import Data.List hiding (partition)
 
 main = do -- print $ fmap product $ powerset [1..5]
+    print $ nonTatami' 54
 --  print $ () [2,4..]
 --  print $ tatami 14 14
-        mapM_ print $ newBest $ fmap (id &&& nonTatami) [2,4..]
+--        mapM_ print $ newBest $ fmap (id &&& nonTatami) [2,4..]
         
 newBest xs@(x:_) = foldr (opBy (on (<) snd)) (const []) xs x
 
@@ -18,6 +19,9 @@ opBy lt x rest best = if x `lt` best then rest best else x:rest x
 
 nonTatami :: Int -> Int       
 nonTatami = (length . filter (not . uncurry tatami) . parts)
+
+nonTatami' = (filter (not . uncurry tatami) . parts)
+
 
 parts n = let factors = unique . sort . fmap product . powerset . primeFactors $ n
           in takeWhile (uncurry (<=)) $ zip factors (reverse factors)
