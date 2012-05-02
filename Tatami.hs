@@ -6,11 +6,16 @@ import Control.Arrow
 import Data.Function
 import Data.List hiding (partition)
 
-main = do -- print $ fmap product $ powerset [1..5]
-    print $ nonTatami' 54
+import Count
+
+-- mapM_ print $ take 100 $ fmap ((product . fmap (+1)) &&& product . (zipWith (^) primes)) numbers
+
+main = do return ()
+-- print $ fmap product $ powerset [1..5]
+--    print $ nonTatami' 54
 --  print $ () [2,4..]
 --  print $ tatami 14 14
-    -- mapM_ print $ newBest $ fmap (id &&& nonTatami) [2,4..]
+          mapM_ print . newBest . fmap (id &&& nonTatami) . filter ((>= 20) . length . parts) $ [2,4..]
         
 newBest xs@(x:_) = foldr (opBy (on (<) snd)) (const []) xs x
 
@@ -18,9 +23,9 @@ opBy :: (a -> a -> Bool) -> a -> (a -> [a]) -> a -> [a]
 opBy lt x rest best = if x `lt` best then rest best else x:rest x
 
 nonTatami :: Int -> Int       
-nonTatami = (length . filter (not . uncurry tatami) . parts)
+nonTatami = length . filter (not . uncurry tatami) . parts
 
-nonTatami' = (filter (not . uncurry tatami) . parts)
+nonTatami' = filter (not . uncurry tatami) . parts
 
 
 parts n = let factors = unique . sort . fmap product . powerset . primeFactors $ n
@@ -50,18 +55,29 @@ tatami r s | r > s = error "Please rotate 90 degrees."
            | even r = case r of
                         2 -> True
                         r -> partitionEven r s
-           | True = error ("Shouldn't happen.  " ++ show r ++ "is neither even nor odd.")
+           | otherwise = error ("Shouldn't happen.  " ++ show r ++ "is neither even nor odd.")
+
+--- Once you have a sufficiently large run, you don't need to check above it.
 
 partitionEven = (fmap.fmap) (last . fmap snd) partitionEven'
 partitionEven' :: Int -> Int -> [(Int,Bool)]
+-- partitionEven' r s = take (s + 1) . zip [0..] $ drop (r-1) ln'
+--     where
+--       -- stuff that ends in 1
+--       l1 = False : ln
+--       -- stuff that ends in something other than 1
+--       ln = replicate (r-1) False ++ True : zipWith (||) (drop 2 l1)  l1
+--       ln' = zipWith (||) ln l1
+    
 partitionEven' r s = take (s + 1) . zip [0..] $ drop (r-1) ln'
     where
       -- stuff that ends in 1
-      l1 = False : ln
+      l1 =  zipWith (||) (False : ln) (replicate (r-1) False ++ (True:True : repeat False))
       -- stuff that ends in something other than 1
       ln = replicate (r-1) False ++ True : zipWith (||) (drop 2 l1)  l1
       ln' = zipWith (||) ln l1
-    
+
+
 partitionOdd = (fmap.fmap) (last . fmap snd) partitionOdd'
 partitionOdd' :: Int -> Int -> [(Int,Bool)]
 partitionOdd' r s = take (s + 1) . zip [0..] $ drop r l
